@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<title>Publicar | MAVIX</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛍️</text></svg>">
+<link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+<header><div class="w"><div class="top">
+ <a class="logo" href="index.html">MAVI<b>X</b></a><span id="who" class="pill"></span>
+ <a class="b" href="index.html">Ver anuncios</a><a class="b hide" id="bAdm" href="admin.html">Admin</a><button class="b" id="bOut">Salir</button>
+</div></div></header>
+<main class="w">
+ <div class="box"><h2>Nueva solicitud de publicación</h2>
+  <small id="precios"></small><div id="form"></div></div>
+ <div class="box"><h2>Mis solicitudes</h2><div id="mine"><p class="cnt">Cargando…</p></div></div>
+ <div class="box"><h2>Cómo funciona</h2><small>1. Envías tu solicitud y ves cómo quedará tu anuncio. 2. El administrador la revisa y la aprueba. 3. Pagas al número indicado. 4. Por WhatsApp envías el ID de tu publicación y la captura del pago. 5. Al verificar el pago, tu anuncio se activa por los días elegidos y desaparece solo al vencer. Tu anuncio es anónimo: no muestra tu usuario.</small></div>
+</main>
+<div class="toast hide" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.1/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="lib.js"></script>
+<script>
+$("bOut").onclick=salir;
+const EST={pendiente:["wt","Pendiente de aprobación"],aprobada:["bl","Aprobada: falta el pago"],publicada:["ok","Publicada"],rechazada:["no","Rechazada"]};
+async function renderMine(){
+ const{data,error}=await sb.from("solicitudes").select("*").eq("user_id",S.me.id).order("creado",{ascending:false});
+ if(error)return fail(error);
+ S.mine=data;
+ $("mine").innerHTML=data.length?data.map(r=>{
+  const e=EST[r.estado]||["",r.estado],pr=S.pr[r.dias],venc=r.expira&&new Date(r.expira)<new Date();
+  return`<div class="tbl"><b>${esc(r.titulo)} <span class="pill ${e[0]}">${e[1]}</span></b>
+  <small>ID <b>${esc(r.codigo)}</b> · ${esc(r.ciudad)} · ${esc(cat(r.cat).nombre)} · ${r.dias} días (S/ ${pr}) · enviada ${fdate(r.creado)}${r.estado==="publicada"&&r.expira?" · "+(venc?"venció ":"vence ")+fdate(r.expira):""}</small>
+  <div class="vp">${card(r,true)}<small>Así se ve tu anuncio.</small></div>
+  ${r.estado==="pendiente"?'<small>El administrador está revisando tu solicitud.</small>':""}
+  ${r.estado==="aprobada"?`<div class="pay"><b>✅ Aprobada. Ahora activa tu publicación:</b>
+   <small>1. Paga S/ ${pr} al número:</small><div class="num"><b>${esc(S.num)}</b><button class="b p" data-copy="${esc(S.num)}">Copiar número</button></div>
+   <small>2. Envía por WhatsApp tu <b>ID de publicación (${esc(r.codigo)})</b> y la <b>captura del pago</b> adjunta.</small>
+   <a class="b g" target="_blank" rel="noopener" href="${waLink(r)}">Enviar ID y captura por WhatsApp</a>
+   <small>Al abrir WhatsApp, adjunta la captura del pago en el chat antes de enviar.</small></div>`:""}
+  ${r.estado==="publicada"?"<small>🎉 Tu anuncio ya está publicado.</small>":""}
+  ${r.estado==="rechazada"?"<small>El administrador no aprobó esta solicitud.</small>":""}
+  ${r.estado==="pendiente"||r.estado==="aprobada"?`<div class="acts"><button class="b d s" data-del="${r.id}">Cancelar solicitud</button></div>`:""}</div>`}).join("")
+  :'<p class="cnt">Aún no has enviado solicitudes.</p>';
+}
+$("mine").onclick=async e=>{
+ const b=e.target.closest("button");if(!b)return;
+ if(b.dataset.copy)return copiar(b.dataset.copy);
+ if(b.dataset.del){
+  if(!confirm("¿Cancelar esta solicitud?"))return;
+  b.disabled=true;const{error}=await sb.from("solicitudes").delete().eq("id",b.dataset.del);
+  if(error){b.disabled=false;return fail(error)}
+  toast("Solicitud cancelada");renderMine();
+ }
+};
+(async()=>{
+ try{await boot()}catch(e){return fatal(e)}
+ if(!S.me||!S.prof){location.replace("index.html#ingresar");return}
+ $("who").textContent=S.prof.username;$("bAdm").classList.toggle("hide",!isAdm());
+ $("precios").textContent="Precios: "+[3,7,10].map(d=>`${d} días S/ ${S.pr[d]}`).join(" · ")+". Cada publicación se paga por separado.";
+ mountForm($("form"),false,()=>{renderMine();$("mine").scrollIntoView({behavior:"smooth"})});
+ renderMine();
+ sb.auth.onAuthStateChange(ev=>{if(ev==="SIGNED_OUT")location.replace("index.html")});
+})();
+</script>
+</body>
+</html>

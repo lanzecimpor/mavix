@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<title>MAVIX | Anuncios clasificados</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛍️</text></svg>">
+<link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+<header><div class="w">
+ <div class="top"><a class="logo" href="index.html">MAVI<b>X</b></a><span id="who" class="pill hide"></span>
+  <a class="b a" id="bReq" href="panel.html">Publicar</a><a class="b hide" id="bAdm" href="admin.html">Admin</a><button class="b hide" id="bOut">Salir</button></div>
+ <div class="bar"><input id="q" type="search" placeholder="Buscar anuncios" aria-label="Buscar"><select id="ciu" aria-label="Localizar"></select></div>
+ <div class="cats" id="cats"></div><div class="cats hide" id="subs"></div>
+</div></header>
+<main class="w"><p class="cnt" id="cnt">Cargando…</p><section class="g" id="grid"></section></main>
+<footer>Los anuncios son anónimos. Antes de pagar, conoce el producto o servicio en persona.</footer>
+<div class="toast hide" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.1/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="lib.js"></script>
+<script>
+const st={cat:"",sub:"",ciu:S.ciu,q:"",ads:[]};
+let ir=false;
+async function loadAds(){
+ const{data,error}=await sb.from("anuncios").select("*").gt("expira",new Date().toISOString())
+  .order("destacado",{ascending:false}).order("creado",{ascending:false}).limit(400);
+ if(error)throw error;st.ads=data||[];
+}
+function renderCats(){
+ $("cats").innerHTML=[{id:"",nombre:"Todos",emoji:"✨"},...CATS].map(c=>`<button class="cat" aria-pressed="${st.cat===c.id}" data-c="${esc(c.id)}">${esc(c.emoji+" "+c.nombre)}</button>`).join("");
+ const ss=(CATS.find(x=>x.id===st.cat)||{}).subs;$("subs").classList.toggle("hide",!ss);
+ if(ss)$("subs").innerHTML=[{id:"",nombre:"Todos",emoji:""},...ss].map(c=>`<button class="cat sub" aria-pressed="${st.sub===c.id}" data-s="${esc(c.id)}">${esc((c.emoji+" "+c.nombre).trim())}</button>`).join("");
+}
+function renderGrid(){
+ const q=st.q.toLowerCase().trim();
+ const r=st.ads.filter(a=>(!st.cat||a.cat===st.cat)&&(!st.sub||a.sub===st.sub)&&(!st.ciu||a.ciudad===st.ciu)&&(!q||(a.titulo+" "+a.descripcion).toLowerCase().includes(q)));
+ $("cnt").textContent=r.length+(r.length===1?" anuncio":" anuncios")+(st.ciu?" en "+st.ciu:"");
+ $("grid").innerHTML=r.length?r.map(a=>card(a)).join(""):'<div class="em">No hay anuncios con estos filtros. Prueba otra localización o publica el primero.</div>';
+}
+const refresh=()=>{renderCats();renderGrid()};
+$("cats").onclick=e=>{const b=e.target.closest("[data-c]");if(b){st.cat=b.dataset.c;st.sub="";refresh()}};
+$("subs").onclick=e=>{const b=e.target.closest("[data-s]");if(b){st.sub=b.dataset.s;refresh()}};
+$("q").oninput=e=>{st.q=e.target.value;renderGrid()};
+$("ciu").onchange=e=>{st.ciu=e.target.value;localStorage.setItem("mx_ciu",st.ciu);renderGrid()};
+$("grid").onclick=e=>{
+ const p=e.target.closest(".ph[data-id]");if(!p)return;
+ const a=st.ads.find(x=>x.id===p.dataset.id);if(!a)return;
+ const i=((+p.dataset.i||0)+1)%a.fotos.length;p.dataset.i=i;p.querySelector("img").src=a.fotos[i];
+};
+function renderSess(){
+ $("who").classList.toggle("hide",!S.prof);$("who").textContent=S.prof?S.prof.username:"";
+ $("bAdm").classList.toggle("hide",!isAdm());$("bOut").classList.toggle("hide",!S.me);
+}
+$("bReq").onclick=e=>{if(!S.me){e.preventDefault();ir=true;toast("Inicia sesión o crea tu cuenta para publicar");openAuth()}};
+$("bOut").onclick=async()=>{await sb.auth.signOut();toast("Sesión cerrada")};
+
+(async()=>{
+ $("ciu").innerHTML=opts(CIU,"📍 Localizar");$("ciu").value=st.ciu;
+ try{await boot();await loadAds()}catch(e){return fatal(e)}
+ renderSess();refresh();
+ sb.auth.onAuthStateChange((ev,s)=>{
+  if(ev==="SIGNED_IN"||ev==="SIGNED_OUT")setTimeout(async()=>{
+   await loadProfile(s);renderSess();
+   if(ev==="SIGNED_IN"&&ir)location.href="panel.html";
+  },0);
+ });
+ if(location.hash==="#ingresar"&&!S.me){ir=true;openAuth()}
+})();
+</script>
+</body>
+</html>
