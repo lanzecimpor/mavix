@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<title>Mis solicitudes | MAVIX</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛍️</text></svg>">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f1f6f5;--sf:#fff;--ink:#0f2421;--mu:#587570;--ln:#d5e4e1;--br:#0f766e;--bi:#fff;--ac:#f59e0b;--ok:#15803d;--chip:#dff0ed;
+font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+@media (prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#0b1716;--sf:#12231f;--ink:#e8f5f2;--mu:#8fb0aa;--ln:#25403b;--br:#2dd4bf;--bi:#04201c;--chip:#1d3732}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);line-height:1.4}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--sf);z-index:20}
+button,input,select,textarea{font:inherit;color:inherit}
+header{background:var(--sf);border-bottom:1px solid var(--ln)}
+.w{max-width:1000px;margin:0 auto;padding:0 12px}
+.top{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;padding:10px 0}
+.logo{font-weight:800;font-size:1.45rem;letter-spacing:-.04em;color:var(--br);margin-right:auto;text-decoration:none}.logo b{color:var(--ac)}
+.b{border:0;border-radius:10px;padding:8px 12px;font-size:.88rem;font-weight:700;cursor:pointer;background:var(--chip);white-space:nowrap;text-decoration:none;color:var(--ink);display:inline-block}
+.b.p{background:var(--br);color:var(--bi)}.b.a{background:var(--ac);color:#241700}.b.s{padding:5px 10px;font-size:.8rem}.b.d{background:#c62828;color:#fff}
+.b:disabled{opacity:.6;cursor:wait}
+:is(button,input,select,textarea,a):focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.pill{font-size:.72rem;background:var(--chip);border-radius:99px;padding:3px 9px;font-weight:700}
+.pill.ok{background:var(--ok);color:#fff}.pill.wt{background:var(--ac);color:#241700}.pill.no{background:#c62828;color:#fff}
+.bar{display:flex;gap:8px;padding-bottom:8px}
+.bar input,.bar select,.f input,.f select,.f textarea,.in{background:var(--bg);border:1px solid var(--ln);border-radius:10px;padding:9px 11px;min-width:0;width:100%}
+.bar input{flex:1}.bar select{width:auto;max-width:42%}
+.cats{display:flex;gap:4px;overflow-x:auto;padding-bottom:9px;scrollbar-width:none}
+.cat{border:0;background:var(--chip);border-radius:7px;padding:3px 9px;font-size:.76rem;cursor:pointer;white-space:nowrap;font-weight:600}
+.cat[aria-pressed="true"]{background:var(--br);color:var(--bi)}
+.cnt{color:var(--mu);font-size:.85rem;margin:12px 0 8px}
+.g{display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr));padding-bottom:40px}
+.cd{background:var(--sf);border:1px solid var(--ln);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+.ph{height:74px;background:var(--chip);display:flex;align-items:center;justify-content:center;font-size:1.7rem;position:relative}
+.ph[data-id]{cursor:pointer}.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.tg{position:absolute;left:3px;top:3px;font-size:.55rem;font-weight:800;background:var(--ac);color:#241700;padding:1px 7px;border-radius:99px}
+.ph i{position:absolute;right:3px;bottom:3px;background:#000a;color:#fff;font-style:normal;font-size:.55rem;padding:0 5px;border-radius:99px}
+.bd{padding:5px 6px 3px;display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}
+.bd h3{margin:0;font-size:.78rem;line-height:1.2;font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.bd p{display:none;margin:0;color:var(--mu);font-size:.82rem}
+.pr{font-weight:800;font-size:.86rem;color:var(--br)}.mt{color:var(--mu);font-size:.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ct{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:3px 5px 5px}
+.ct a{text-align:center;text-decoration:none;font-weight:700;font-size:.9rem;line-height:1;padding:7px 0;border-radius:7px;color:#fff}
+.call{background:var(--br);color:var(--bi)!important}.wa{background:var(--ok)}
+.em{grid-column:1/-1;text-align:center;color:var(--mu);padding:36px 10px}
+dialog{border:0;border-radius:16px;padding:0;width:96vw;max-width:520px;max-height:92vh;background:var(--sf);color:var(--ink)}
+dialog::backdrop{background:#000a}
+.f{padding:16px;display:grid;gap:10px}.f h2{margin:0}.f label{display:grid;gap:4px;font-weight:600;font-size:.86rem}
+.f input[type=checkbox]{width:auto}
+.r{display:flex;flex-direction:column;gap:10px}.pw{position:relative}.pw input{padding-right:42px}
+.eye{position:absolute;right:3px;top:50%;transform:translateY(-50%);background:none;border:0;cursor:pointer;font-size:1.1rem;padding:6px}
+.err{color:#c62828;font-size:.84rem;margin:0;min-height:1em}
+.acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.pre{display:flex;gap:6px}.pre img{width:54px;height:54px;object-fit:cover;border-radius:8px}
+.tabs{display:flex;gap:5px;flex-wrap:wrap;margin:12px 0}
+.tbl,.box{background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:10px 12px;margin-bottom:8px;display:grid;gap:5px}
+.box{padding:14px;margin:12px 0;gap:8px}.box h2{margin:0;font-size:1.05rem}.tbl small{color:var(--mu)}
+.st{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:12px 0}
+.st div{background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:10px 12px}.st b{font-size:1.5rem;display:block}.st small{color:var(--mu)}
+.kp{font-size:1.8rem;font-weight:800}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:99px;z-index:60;font-weight:600;max-width:92vw;text-align:center}
+.hide{display:none!important}
+footer{text-align:center;color:var(--mu);font-size:.8rem;padding:0 14px 28px}
+@media(min-width:480px){.r{flex-direction:row}.r>*{flex:1}}
+@media(min-width:700px){header{position:sticky;top:env(safe-area-inset-top,0px);z-index:10}.g{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}.ph{height:84px;font-size:1.9rem}.bd h3{font-size:.8rem}.pr{font-size:.88rem}.mt{font-size:.66rem}.cat{font-size:.82rem;padding:4px 11px}.b{padding:9px 15px}.st{grid-template-columns:repeat(4,1fr)}}
+
+
+.dots{display:flex;gap:6px}.dots i{height:5px;flex:1;border-radius:9px;background:var(--ln)}.dots i.on{background:var(--br)}
+.yp{background:var(--chip);border-radius:12px;padding:12px;text-align:center;display:grid;gap:6px;justify-items:center}.yp b{font-size:1.5rem;letter-spacing:.04em}.yp small{color:var(--mu)}
+.lnk{background:none;border:0;color:var(--br);font-weight:700;cursor:pointer;text-decoration:underline;padding:4px;font-size:.88rem}
+.pillbtn[aria-pressed="true"]{background:var(--ok);color:#fff}
+ol.o{margin:0;padding-left:20px;font-size:.9rem;display:grid;gap:3px}
+.foot a{color:var(--mu)}
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin:0 0 10px}
+.hr2{height:1px;background:var(--ln);margin:4px 0}
+
+</style>
+</head>
+<body>
+<header><div class="w"><div class="top">
+ <a class="logo" href="index.html">MAVI<b>X</b></a><span id="who" class="pill"></span>
+ <a class="b" href="index.html">Ver anuncios</a><a class="b a" href="index.html#publicar">Publicar</a><button class="b" id="bOut">Salir</button>
+</div></div></header>
+<main class="w">
+ <div class="box"><h2>Mis solicitudes</h2><div id="mine"><p class="cnt">Cargando…</p></div></div>
+ <div class="box"><h2>Precios</h2><small style="color:var(--mu)" id="precios"></small></div>
+</main>
+<div class="toast hide" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.1/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="lib.js"></script>
+<script>
+$("bOut").onclick=salir;
+const EST={pendiente:["wt","Pendiente de pago"],publicada:["ok","Publicada"],rechazada:["no","Rechazada"]};
+async function render(){
+  const{data,error}=await sb.from("solicitudes").select("*").eq("user_id",S.me.id).order("creado",{ascending:false});
+  if(error)return fail(error);S.mine=data;
+  $("mine").innerHTML=data.length?data.map(r=>{const e=EST[r.estado]||["",r.estado],venc=r.expira&&new Date(r.expira)<new Date();
+    let extra="";
+    if(r.estado==="pendiente")extra=`<div class="yp"><small>Yapea S/ ${S.pr[r.dias]} a este número</small><b>${fmtTel(S.yape)}</b><button class="b a s" data-cp="1">Copiar número</button></div><div class="acts"><button class="b s" style="background:var(--ok);color:#fff" data-wa="${r.id}">Solicitar activación por WhatsApp</button><button class="b d s" data-del="${r.id}">Cancelar</button></div>`;
+    if(r.estado==="rechazada"&&r.motivo)extra=`<small>Motivo: ${esc(r.motivo)}</small>`;
+    return`<div class="tbl"><b>${esc(r.titulo)} <span class="pill ${e[0]}">${e[1]}</span></b><small>${esc(r.codigo)} · ${esc(r.ciudad)} · ${esc(catName(r.cat))} · ${r.dias} días (S/ ${S.pr[r.dias]}) · enviada ${fdate(r.creado)}${r.estado==="publicada"&&r.expira?" · "+(venc?"venció ":"vence ")+fdate(r.expira):""}</small>${extra}</div>`}).join(""):'<p class="cnt">Aún no has enviado solicitudes. Toca «Publicar» para crear la primera.</p>';
+}
+$("mine").onclick=async e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.cp)copiar(S.yape);
+  if(b.dataset.wa)abrir(waActivar(S.mine.find(x=>x.id===b.dataset.wa)));
+  if(b.dataset.del){if(!confirm("¿Cancelar esta solicitud?"))return;const{error}=await sb.from("solicitudes").delete().eq("id",b.dataset.del);if(error)return fail(error);toast("Solicitud cancelada");render()}
+};
+(async()=>{
+  try{await boot()}catch(e){return fatal(e)}
+  if(!S.me||!S.prof){location.replace("index.html#publicar");return}
+  $("who").textContent=S.prof.username;
+  $("precios").textContent="3 días S/ "+S.pr[3]+" · 7 días S/ "+S.pr[7]+" · 10 días S/ "+S.pr[10]+". Cada publicación se paga por separado.";
+  render();
+})();
+</script>
+</body>
+</html>
