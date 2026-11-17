@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tablón – Publicar</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilos.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="supabase.js"></script></head>
+<body><nav id="nav"></nav>
+<main class="ancho">
+  <h1>Publicar un anuncio</h1>
+  <p class="sub">Un administrador lo revisa antes de mostrarlo. Dura 30 días.</p>
+  <div class="caja" style="max-width:none">
+    <label for="titulo">Título</label><input id="titulo" maxlength="80">
+    <label for="categoria">Categoría</label><select id="categoria"></select>
+    <label for="precio">Precio (S/)</label><input id="precio" type="number" min="0" step="0.01">
+    <label for="descripcion">Descripción</label><textarea id="descripcion" rows="4" maxlength="1000"></textarea>
+    <label for="contacto">WhatsApp (9 dígitos)</label><input id="contacto" type="tel" inputmode="numeric" placeholder="987654321">
+    <label for="foto">Foto (máx. 3 MB)</label><input id="foto" type="file" accept="image/*">
+    <p style="margin:18px 0 0"><button id="ok" class="principal" type="button">Publicar anuncio</button></p>
+    <div id="msg" class="msg" hidden role="status"></div>
+  </div>
+  <h2>Mis anuncios</h2>
+  <div id="mis"></div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+let user;
+CATEGORIAS.forEach(c => $("categoria").insertAdjacentHTML("beforeend", `<option>${esc(c)}</option>`));
+function aviso(t, error) { const m = $("msg"); m.textContent = t; m.className = "msg" + (error ? " error" : ""); m.hidden = false; }
+
+(async () => {
+  const r = await pintarNav(); user = r.user;
+  if (!user) return location.href = "login.html";
+  listar();
+})();
+
+async function listar() {
+  const { data } = await sb.from("anuncios").select("*").eq("usuario_id", user.id).order("creado_en", { ascending: false });
+  $("mis").innerHTML = data && data.length ? data.map(a => `
+    <div class="fila">
+      ${a.foto_url ? `<img src="${esc(a.foto_url)}" alt="">` : '<div class="sinfoto">Sin foto</div>'}
+      <div class="info"><b>${esc(a.titulo)}</b><span>${precio(a.precio)} · ${esc(a.categoria)}</span><br>
+        <span class="estado ${esc(a.estado)}">${esc(a.estado)}</span></div>
+      <button class="sec peligro" data-id="${a.id}">Borrar</button>
+    </div>`).join("") : '<p class="vacio">Aún no has publicado nada.</p>';
+  document.querySelectorAll("[data-id]").forEach(b => b.onclick = async () => {
+    if (!confirm("¿Borrar este anuncio?")) return;
+    await sb.from("anuncios").delete().eq("id", b.dataset.id); listar();
+  });
+}
+
+$("ok").onclick = async () => {
+  const titulo = $("titulo").value.trim(), descripcion = $("descripcion").value.trim();
+  const contacto = $("contacto").value.replace(/\D/g, ""), precioN = parseFloat($("precio").value);
+  const file = $("foto").files[0];
+  if (!titulo || !descripcion) return aviso("Completa el título y la descripción.", true);
+  if (isNaN(precioN) || precioN < 0) return aviso("Escribe un precio válido.", true);
+  if (contacto.length < 9) return aviso("Escribe un número de WhatsApp de 9 dígitos.", true);
+  if (file && file.size > 3 * 1024 * 1024) return aviso("La foto pesa más de 3 MB.", true);
+  $("ok").disabled = true; aviso("Publicando...");
+  let foto_url = null;
+  if (file) {
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const ruta = `${user.id}/${Date.now()}.${ext}`;
+    const { error } = await sb.storage.from("fotos").upload(ruta, file);
+    if (error) { $("ok").disabled = false; return aviso("No se pudo subir la foto: " + error.message, true); }
+    foto_url = sb.storage.from("fotos").getPublicUrl(ruta).data.publicUrl;
+  }
+  const { error } = await sb.from("anuncios").insert({
+    usuario_id: user.id, titulo, descripcion, precio: precioN,
+    categoria: $("categoria").value, contacto, foto_url, estado: "pendiente"
+  });
+  $("ok").disabled = false;
+  if (error) return aviso("No se pudo publicar: " + error.message, true);
+  aviso("Anuncio enviado. Se mostrará cuando el administrador lo apruebe.");
+  ["titulo", "precio", "descripcion", "contacto", "foto"].forEach(i => $(i).value = "");
+  listar();
+};
+</script></body></html>

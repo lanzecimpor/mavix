@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tablón – Anuncios</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilos.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="supabase.js"></script></head>
+<body><nav id="nav"></nav>
+<main>
+  <h1>Lo que se vende cerca de ti</h1>
+  <p class="sub">Anuncios revisados antes de publicarse. Contacta directo al vendedor por WhatsApp.</p>
+  <div class="filtros">
+    <input id="q" type="search" placeholder="Buscar anuncios" aria-label="Buscar anuncios">
+    <select id="cat" aria-label="Categoría"><option value="">Todas las categorías</option></select>
+  </div>
+  <div id="lista" class="grid"></div>
+</main>
+<script>
+let todos = [];
+pintarNav();
+const sel = document.getElementById("cat");
+CATEGORIAS.forEach(c => sel.insertAdjacentHTML("beforeend", `<option>${esc(c)}</option>`));
+
+async function cargar() {
+  const { data, error } = await sb.from("anuncios").select("*")
+    .eq("estado", "aprobado").gt("vence_en", new Date().toISOString())
+    .order("creado_en", { ascending: false }).limit(200);
+  document.getElementById("lista").innerHTML = error
+    ? '<p class="vacio">No se pudieron cargar los anuncios. Revisa la conexión con Supabase.</p>' : "";
+  if (error) return;
+  todos = data; pintar();
+}
+function pintar() {
+  const q = document.getElementById("q").value.toLowerCase().trim();
+  const c = sel.value;
+  const res = todos.filter(a => (!c || a.categoria === c) &&
+    (!q || (a.titulo + " " + a.descripcion).toLowerCase().includes(q)));
+  document.getElementById("lista").innerHTML = res.length ? res.map(a => `
+    <article class="tarjeta">
+      ${a.foto_url ? `<img src="${esc(a.foto_url)}" alt="${esc(a.titulo)}" loading="lazy">` : '<div class="sinfoto">Sin foto</div>'}
+      <div class="cuerpo">
+        <span class="cat">${esc(a.categoria)}</span>
+        <h3>${esc(a.titulo)}</h3>
+        <span class="precio">${precio(a.precio)}</span>
+        <p class="desc">${esc(a.descripcion)}</p>
+        <a class="boton" href="${esc(whatsapp(a.contacto))}" target="_blank" rel="noopener">Escribir por WhatsApp</a>
+      </div>
+    </article>`).join("") : '<p class="vacio" style="grid-column:1/-1">No hay anuncios con esos filtros.</p>';
+}
+document.getElementById("q").oninput = pintar;
+sel.onchange = pintar;
+cargar();
+</script></body></html>

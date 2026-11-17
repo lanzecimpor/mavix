@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tablón – Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilos.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="supabase.js"></script></head>
+<body><nav id="nav"></nav>
+<main class="ancho">
+  <h1>Panel de administración</h1>
+  <p class="sub">Revisa los anuncios antes de que se vean en el sitio.</p>
+  <div class="tabs" id="tabs">
+    <button data-e="pendiente" class="on">Pendientes</button>
+    <button data-e="aprobado">Aprobados</button>
+    <button data-e="rechazado">Rechazados</button>
+  </div>
+  <div id="lista"></div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+let estado = "pendiente";
+(async () => {
+  const { user, rol } = await pintarNav();
+  if (!user) return location.href = "login.html";
+  if (rol !== "admin") { $("lista").innerHTML = '<p class="vacio">Solo el administrador puede ver esta página.</p>'; return; }
+  cargar();
+})();
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#tabs button").forEach(x => x.classList.remove("on"));
+  b.classList.add("on"); estado = b.dataset.e; cargar();
+});
+async function cargar() {
+  const { data, error } = await sb.from("anuncios").select("*").eq("estado", estado).order("creado_en", { ascending: false });
+  if (error) { $("lista").innerHTML = '<p class="vacio">Error: ' + esc(error.message) + "</p>"; return; }
+  $("lista").innerHTML = data.length ? data.map(a => `
+    <div class="fila">
+      ${a.foto_url ? `<img src="${esc(a.foto_url)}" alt="">` : '<div class="sinfoto">Sin foto</div>'}
+      <div class="info"><b>${esc(a.titulo)}</b>
+        <span>${precio(a.precio)} · ${esc(a.categoria)} · WhatsApp ${esc(a.contacto)}</span>
+        <span style="display:block">${esc(a.descripcion.slice(0, 140))}</span></div>
+      <div class="acciones">
+        ${estado !== "aprobado" ? `<button class="principal" data-a="aprobado" data-id="${a.id}">Aprobar</button>` : ""}
+        ${estado !== "rechazado" ? `<button class="sec" data-a="rechazado" data-id="${a.id}">Rechazar</button>` : ""}
+        <button class="sec peligro" data-a="borrar" data-id="${a.id}">Borrar</button>
+      </div>
+    </div>`).join("") : '<p class="vacio">No hay anuncios en esta lista.</p>';
+  document.querySelectorAll("[data-a]").forEach(b => b.onclick = async () => {
+    if (b.dataset.a === "borrar") {
+      if (!confirm("¿Borrar este anuncio para siempre?")) return;
+      await sb.from("anuncios").delete().eq("id", b.dataset.id);
+    } else {
+      await sb.from("anuncios").update({ estado: b.dataset.a }).eq("id", b.dataset.id);
+    }
+    cargar();
+  });
+}
+</script></body></html>
